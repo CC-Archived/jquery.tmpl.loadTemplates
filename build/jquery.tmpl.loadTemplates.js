@@ -1,11 +1,10 @@
 /*
- * jquery.tmpl.loadTemplates v1.1.0
+ * jquery.tmpl.loadTemplates v1.2.0
  * Copyright (c) 2011 CodeCatalyst, LLC.
  * Open source under the MIT License.
  */
 (function() {
   var $, TEMPLATE_NAME_EXPRESSION;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   TEMPLATE_NAME_EXPRESSION = /\/*([\w]*).html$/;
   $ = jQuery;
   $.extend({
@@ -44,34 +43,28 @@
       return deferred.promise();
     }
   });
-  $.fn.loadTemplates = function(options) {
-    var defaults, selectedElement;
-    defaults = {
-      templates: {},
-      process: null,
-      compile: false,
-      done: null
-    };
-    options = $.extend({}, defaults, options);
-    if (options.templates != null) {
-      selectedElement = this;
-      $.loadTemplates(options.templates, function(templateName, templateContent) {
-        if (options.process != null) {
-          templateContent = options.process(templateName, templateContent);
-        }
-        if (templateContent != null) {
-          selectedElement.append("<script id=\"" + templateName + "\" type=\"text/x-jquery-tmpl\">" + templateContent + "</script>");
-        }
-        if (options.compile) {
-          return templateContent;
-        } else {
-          return null;
-        }
-      }).done(__bind(function() {
-        selectedElement.trigger($.Event("done"));
-        return typeof options.done === "function" ? options.done() : void 0;
-      }, this));
+  $.fn.loadTemplates = function(templates, templateProcessorCallback, compile) {
+    var promise, selectedElement;
+    if (templateProcessorCallback == null) {
+      templateProcessorCallback = null;
     }
-    return this;
+    if (compile == null) {
+      compile = false;
+    }
+    selectedElement = this;
+    promise = $.loadTemplates(templates, function(templateName, templateContent) {
+      if (templateProcessorCallback != null) {
+        templateContent = templateProcessorCallback(templateName, templateContent);
+      }
+      if (templateContent != null) {
+        selectedElement.append("<script id=\"" + templateName + "\" type=\"text/x-jquery-tmpl\">" + templateContent + "</script>");
+      }
+      if (compile) {
+        return templateContent;
+      } else {
+        return null;
+      }
+    });
+    return promise;
   };
 }).call(this);

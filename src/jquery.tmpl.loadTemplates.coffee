@@ -1,4 +1,4 @@
-# [jquery.tmpl.loadTemplates](http://github.com/CodeCatalyst/jquery.tmpl.loadTemplates) v1.1.0  
+# [jquery.tmpl.loadTemplates](http://github.com/CodeCatalyst/jquery.tmpl.loadTemplates) v1.2.0  
 # Copyright (c) 2011 [CodeCatalyst, LLC](http://www.codecatalyst.com/).  
 # Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
@@ -67,42 +67,24 @@ $.extend(
 )
 
 # *Load external template(s) as template `<script/>` children of the selected element.*
-$.fn.loadTemplates = ( options ) ->
-	# Default options.
-	defaults =
-		templates: {}
-		process: null
-		compile: false
-		done: null
+$.fn.loadTemplates = ( templates, templateProcessorCallback = null, compile = false ) ->
+	# Selected element.
+	selectedElement = this
 		
-	# Merge default and specified options.
-	options = $.extend( {}, defaults, options )
+	# Load the external template(s).
+	promise = $.loadTemplates(
+		templates,
+		( templateName, templateContent ) ->
+			# Process the template content, if applicable.
+			templateContent = templateProcessorCallback( templateName, templateContent ) if templateProcessorCallback?
+		
+			# Create a template `<script/>` from the loaded template content, identified by the template name, and append it to the selected element.
+			if templateContent?
+				selectedElement.append( "<script id=\"#{ templateName }\" type=\"text/x-jquery-tmpl\">#{ templateContent }</script>" )
+		
+			# Return the processed template content to be compiled, if applicable.
+			if compile then return templateContent else null
+	)
 	
-	if options.templates?
-		# Selected element.
-		selectedElement = this
-		
-		# Load the external template(s).
-		$.loadTemplates(
-			options.templates,
-			( templateName, templateContent ) ->
-				# Process the template content via the `options.process` callback, if applicable.
-				templateContent = options.process( templateName, templateContent ) if options.process?
-			
-				# Create a template `<script/>` from the loaded template content, identified by the template name, and append it to the selected element.
-				if templateContent?
-					selectedElement.append( "<script id=\"#{ templateName }\" type=\"text/x-jquery-tmpl\">#{ templateContent }</script>" )
-			
-				# Return the processed template content to be compiled, if `options.compile` is true.
-				if options.compile then return templateContent else null
-		)
-		.done( =>
-			# Dispatch a "done" event.
-			selectedElement.trigger( $.Event("done") );
-			
-			# Call the `options.done` callback.
-			options.done?() 
-		)
-		
-	return this
+	return promise
 	
