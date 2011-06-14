@@ -1,4 +1,4 @@
-# [jquery.tmpl.loadTemplates](http://github.com/CodeCatalyst/jquery.tmpl.loadTemplates) v1.0.1  
+# [jquery.tmpl.loadTemplates](http://github.com/CodeCatalyst/jquery.tmpl.loadTemplates) v1.0.3  
 # Copyright (c) 2011 [CodeCatalyst, LLC](http://www.codecatalyst.com/).  
 # Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
@@ -21,7 +21,7 @@ $ = jQuery
 
 # *Load external template(s).*
 $.extend(
-	loadTemplates: ( templates ) ->
+	loadTemplates: ( templates, templateProcessorCallback = null ) ->
 		# Convert `templates` to an Array if a String was specified.
 		templates = [ templates ] if typeof templates is "string"
 		
@@ -39,8 +39,13 @@ $.extend(
 			# Get the external template as HTML.
 			$.get( 
 				template
-				( content ) ->
-					$.template( templateName, content )
+				( templateContent ) ->
+					# Process the template content, if applicable.
+					templateContent = templateProcessorCallback( templateName, templateContent ) if templateProcessorCallback?
+					
+					# Create a reusable named template (compiled from the template content).
+					if templateContent?
+						$.template( templateName, templateContent )
 				"html"
 			).success( ->
 				# Resolve this Deferred when all of the external templates have been loaded.
@@ -55,4 +60,30 @@ $.extend(
 		
 		# Return the promise to allow callers to register callbacks.
 		return deferred.promise()
+)
+
+# *Load external template(s) as template `<script/>` children of the selected element.*
+$.fn.extend(
+	loadTemplates: ( templates, templateProcessorCallback = null, compile = false ) ->
+		# Selected element.
+		selectedElement = this
+		
+		# Load the external template(s).
+		promise = $.loadTemplates(
+			templates,
+			( templateName, templateContent ) ->
+				# Process the template content, if applicable.
+				templateContent = templateProcessorCallback( templateName, templateContent ) if templateProcessorCallback?
+				
+				# Create a template `<script/>` from the loaded template content, identified by the template name.
+				# Append the newly created template `<script/>` to the selected element.
+				if templateContent?
+					templateTag = $("<script id=\"templateName\" type=\"text/html\"></script>").append( $(templateContent).clone() )
+					$(selectedElement).append( templateTag );
+				
+				# Return the processed template content, if applicable.
+				if compile then return templateContent else false
+		)
+		
+		return promise;
 )
