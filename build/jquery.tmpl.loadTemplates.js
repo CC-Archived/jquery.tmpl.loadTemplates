@@ -63,7 +63,7 @@
         if (compile) {
           return templateContent;
         } else {
-          return false;
+          return null;
         }
       });
       return promise;

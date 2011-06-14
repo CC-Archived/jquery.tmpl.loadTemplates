@@ -82,7 +82,7 @@ $.fn.extend(
 					$(selectedElement).append( templateTag );
 				
 				# Return the processed template content, if applicable.
-				if compile then return templateContent else false
+				if compile then return templateContent else null
 		)
 		
 		return promise;
