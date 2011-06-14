@@ -28,11 +28,15 @@ $.extend(
 		# Create a Deferred to track progress and relay success or failure state.
 		deferred = new jQuery.Deferred()
 		
-		# Create an empty Array to track the loaded templates.
+		# Create a template count and an empty Array to track the loaded templates.
+		templateCount = 0
 		loadedTemplates = []
 		
 		# Load each external template in the specified Array of external templates.
 		$.each( templates, ( templateName, template ) ->
+			# Increment template count.
+			templateCount++
+			
 			# Parse the template name from the external template URL if an Array was specified.
 			templateName = TEMPLATE_NAME_EXPRESSION.exec( template )[ 1 ] if typeof templateName is "number"
 			
@@ -50,7 +54,7 @@ $.extend(
 			).success( ->
 				# Resolve this Deferred when all of the external templates have been loaded.
 				loadedTemplates.push( template )
-				if ( loadedTemplates.length == templates.length )
+				if ( loadedTemplates.length == templateCount )
 					deferred.resolve( $( templateName ) )
 			).error( ( error ) ->
 				# Reject this Deferred if an error occurs while attempting to load an external template.
@@ -75,11 +79,9 @@ $.fn.extend(
 				# Process the template content, if applicable.
 				templateContent = templateProcessorCallback( templateName, templateContent ) if templateProcessorCallback?
 				
-				# Create a template `<script/>` from the loaded template content, identified by the template name.
-				# Append the newly created template `<script/>` to the selected element.
+				# Create a template `<script/>` from the loaded template content, identified by the template name, and append it to the selected element.
 				if templateContent?
-					templateTag = $("<script id=\"#{ templateName }\" type=\"text/html\"></script>").append( $(templateContent).clone() )
-					$(selectedElement).append( templateTag );
+					$(selectedElement).append( "<script id=\"#{ templateName }\" type=\"text/x-jquery-tmpl\">#{ templateContent }</script>" )
 				
 				# Return the processed template content, if applicable.
 				if compile then return templateContent else null

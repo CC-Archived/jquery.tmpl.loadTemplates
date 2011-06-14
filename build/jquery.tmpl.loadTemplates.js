@@ -1,15 +1,10 @@
-/*
- * jquery.tmpl.loadTemplates v1.0.3
- * Copyright (c) 2011 CodeCatalyst, LLC.
- * Open source under the MIT License.
- */
 (function() {
   var $, TEMPLATE_NAME_EXPRESSION;
   TEMPLATE_NAME_EXPRESSION = /\/*([\w]*).html$/;
   $ = jQuery;
   $.extend({
     loadTemplates: function(templates, templateProcessorCallback) {
-      var deferred, loadedTemplates;
+      var deferred, loadedTemplates, templateCount;
       if (templateProcessorCallback == null) {
         templateProcessorCallback = null;
       }
@@ -17,8 +12,10 @@
         templates = [templates];
       }
       deferred = new jQuery.Deferred();
+      templateCount = 0;
       loadedTemplates = [];
       $.each(templates, function(templateName, template) {
+        templateCount++;
         if (typeof templateName === "number") {
           templateName = TEMPLATE_NAME_EXPRESSION.exec(template)[1];
         }
@@ -31,7 +28,7 @@
           }
         }, "html").success(function() {
           loadedTemplates.push(template);
-          if (loadedTemplates.length === templates.length) {
+          if (loadedTemplates.length === templateCount) {
             return deferred.resolve($(templateName));
           }
         }).error(function(error) {
@@ -52,13 +49,11 @@
       }
       selectedElement = this;
       promise = $.loadTemplates(templates, function(templateName, templateContent) {
-        var templateTag;
         if (templateProcessorCallback != null) {
           templateContent = templateProcessorCallback(templateName, templateContent);
         }
         if (templateContent != null) {
-          templateTag = $("<script id=\"" + templateName + "\" type=\"text/html\"></script>").append($(templateContent).clone());
-          $(selectedElement).append(templateTag);
+          $(selectedElement).append("<script id=\"" + templateName + "\" type=\"text/x-jquery-tmpl\">" + templateContent + "</script>");
         }
         if (compile) {
           return templateContent;
