@@ -78,7 +78,7 @@ $.fn.extend(
 				# Create a template `<script/>` from the loaded template content, identified by the template name.
 				# Append the newly created template `<script/>` to the selected element.
 				if templateContent?
-					templateTag = $("<script id=\"templateName\" type=\"text/html\"></script>").append( $(templateContent).clone() )
+					templateTag = $("<script id=\"#{ templateName }\" type=\"text/html\"></script>").append( $(templateContent).clone() )
 					$(selectedElement).append( templateTag );
 				
 				# Return the processed template content, if applicable.

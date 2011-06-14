@@ -57,7 +57,7 @@
           templateContent = templateProcessorCallback(templateName, templateContent);
         }
         if (templateContent != null) {
-          templateTag = $("<script id=\"templateName\" type=\"text/html\"></script>").append($(templateContent).clone());
+          templateTag = $("<script id=\"" + templateName + "\" type=\"text/html\"></script>").append($(templateContent).clone());
           $(selectedElement).append(templateTag);
         }
         if (compile) {
